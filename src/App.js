@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
 import Products from './components/Products';
 import Filter from './components/Filter';
+import Basket from './components/Basket';
 
 class App extends Component {
   state = {
     filteredProducts: [],
     products: [],
+    cartItems: [],
     size: '',
     sort: ''
   };
@@ -18,10 +20,36 @@ class App extends Component {
         this.setState({ filteredProducts: data });
       })
       .catch(e => console.log(e));
+
+    if (localStorage.getItem('cartItems')) {
+      this.setState({
+        cartItems: JSON.parse(localStorage.getItem('cartItems'))
+      });
+    }
   }
 
-  handleAddCart = () => {
-    console.log('handleAddCart');
+  handleAddCart = product => {
+    const cartItems = this.state.cartItems;
+    let productAlreadyInCart = false;
+    cartItems.forEach(item => {
+      if (item.id === product.id) {
+        item.count++;
+        productAlreadyInCart = true;
+      }
+    });
+    if (!productAlreadyInCart) {
+      cartItems.push({ ...product, count: 1 });
+    }
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+    return this.setState({ cartItems });
+  };
+
+  handleRemoveFromCart = product => {
+    const cartItems = this.state.cartItems.filter(
+      item => item.id !== product.id
+    );
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+    this.setState({ cartItems });
   };
 
   handleChangeSize = e => {
@@ -53,7 +81,7 @@ class App extends Component {
       if (this.state.size !== '') {
         return {
           filteredProducts: this.state.products.filter(
-            product => product.availableSizes.indexOf(this.state.size) != -1
+            product => product.availableSizes.indexOf(this.state.size) !== -1
           )
         };
       }
@@ -82,6 +110,14 @@ class App extends Component {
             <Products
               products={this.state.filteredProducts}
               handleAddCart={this.handleAddCart}
+            />
+          </div>
+
+          <div className="col-md-4">
+            <Basket
+              cartItems={this.state.cartItems}
+              handleRemoveFromCart={this.handleRemoveFromCart}
+              handleAddToCart={this.handleAddToCart}
             />
           </div>
         </div>
