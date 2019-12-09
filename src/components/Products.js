@@ -7,7 +7,7 @@ class Products extends Component {
     const producItems = this.props.products.map(product => (
       <div className="col-md-4" key={product.id}>
         <div className="thumbnail text-center">
-          <a href={`#${product.id}`} onClick={this.props.handleAddCart}>
+          <a href={`#${product.id}`}>
             <img
               src={`/products/${product.sku}_1.jpg`}
               alt={product.description}
@@ -18,7 +18,7 @@ class Products extends Component {
             <b>{util.formatCurrency(product.price)}</b>
             <button
               className="btn btn-primary"
-              onClick={e => this.props.handleAddCart(e, product)}
+              onClick={() => this.props.handleAddCart(product)}
             >
               Add
             </button>
