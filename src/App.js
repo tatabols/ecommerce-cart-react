@@ -1,25 +1,28 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import Products from './components/Products';
 import Filter from './components/Filter';
 import Basket from './components/Basket';
+import { fetchProducts } from './actions';
 
 class App extends Component {
   state = {
-    filteredProducts: [],
-    products: [],
     cartItems: [],
+    filteredProducts: [],
     size: '',
     sort: ''
   };
 
   componentDidMount() {
-    fetch('http://localhost:8000/products')
-      .then(resp => resp.json())
-      .then(data => {
-        this.setState({ products: data });
-        this.setState({ filteredProducts: data });
-      })
-      .catch(e => console.log(e));
+    // fetch('http://localhost:8000/products')
+    //   .then(resp => resp.json())
+    //   .then(data => {
+    //     this.setState({ products: data });
+    //     this.setState({ filteredProducts: data });
+    //   })
+    //   .catch(e => console.log(e));
+    console.log('app-componentDidMount');
+    this.props.dispatch(fetchProducts());
 
     if (localStorage.getItem('cartItems')) {
       this.setState({
@@ -63,36 +66,36 @@ class App extends Component {
   };
 
   listProducts = () => {
-    this.setState(state => {
-      if (state.sort !== '') {
-        state.products.sort((a, b) =>
-          state.sort === 'lowest'
-            ? a.price < b.price
-              ? -1
-              : 1
-            : a.price > b.price
-            ? -1
-            : 1
-        );
-      } else {
-        state.products.sort((a, b) => (a.id < b.id ? -1 : 1));
-      }
-
-      if (this.state.size !== '') {
-        return {
-          filteredProducts: this.state.products.filter(
-            product => product.availableSizes.indexOf(this.state.size) !== -1
-          )
-        };
-      }
-
-      return {
-        filteredProducts: state.products
-      };
-    });
+    // TODO: change state reference from local to redux
+    // this.setState(state => {
+    //   if (state.sort !== '') {
+    //     state.products.sort((a, b) =>
+    //       state.sort === 'lowest'
+    //         ? a.price < b.price
+    //           ? -1
+    //           : 1
+    //         : a.price > b.price
+    //         ? -1
+    //         : 1
+    //     );
+    //   } else {
+    //     state.products.sort((a, b) => (a.id < b.id ? -1 : 1));
+    //   }
+    //   if (this.state.size !== '') {
+    //     return {
+    //       filteredProducts: this.state.products.filter(
+    //         product => product.availableSizes.indexOf(this.state.size) !== -1
+    //       )
+    //     };
+    //   }
+    //   return {
+    //     filteredProducts: state.products
+    //   };
+    // });
   };
 
   render() {
+    console.log('app-render-props', this.props);
     return (
       <div className="container">
         <h1>E-Commerce Shpping Cart</h1>
@@ -102,13 +105,13 @@ class App extends Component {
             <Filter
               size={this.state.size}
               sort={this.state.sort}
-              count={this.state.filteredProducts.length}
+              count={this.props.filteredProducts.length}
               handleChangeSize={this.handleChangeSize}
               handleChangeSort={this.handleChangeSort}
             />
             <hr />
             <Products
-              products={this.state.filteredProducts}
+              products={this.props.filteredProducts}
               handleAddCart={this.handleAddCart}
             />
           </div>
@@ -126,4 +129,16 @@ class App extends Component {
   }
 }
 
-export default App;
+const mapStateToProps = state => {
+  console.log('app-mapStateToProps-state.products', state.products);
+
+  return {
+    products: state.productReducer.products,
+    filteredProducts: state.productReducer.products
+  };
+};
+
+const mapDispatchToProps = dispatch => {
+  // TODO
+};
+export default connect(mapStateToProps, null)(App);
